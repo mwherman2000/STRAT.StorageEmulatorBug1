@@ -236,7 +236,7 @@ namespace STRAT.StorageEmulatorBug1.Tests
             var value = this.list[(int)index];
             Debug.WriteLine("List.GetValue:\t(" + index.ToString() + ") = " + JsonConvert.SerializeObject(value));
 
-            string json = JsonConvert.SerializeObject(value);
+            string json = JsonConvert.SerializeObject(value); // MWHERMAN2000 - Simulate reading from storage
             T newvalue = JsonConvert.DeserializeObject<T>(json);
             return newvalue;
         }
