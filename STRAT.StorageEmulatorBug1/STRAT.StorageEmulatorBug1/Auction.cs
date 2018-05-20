@@ -1,7 +1,25 @@
 ﻿using Stratis.SmartContracts;
 
+public class UserLedgerEntry // MWHERMAN2000
+{
+    public string Username;
+    public string Passphrase;
+}
+
 public class Auction : SmartContract
 {
+    public UserLedgerEntry UserLedgerEntry1 // MWHERMAN2000
+    {
+        get
+        {
+            return PersistentState.GetObject<UserLedgerEntry>("UserLedgerEntry1Key");
+        }
+        set
+        {
+            PersistentState.SetObject<UserLedgerEntry>("UserLedgerEntry1Key", value);
+        }
+    }
+
     public Address Owner
     {
         get

@@ -2,6 +2,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stratis.SmartContracts;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace STRAT.StorageEmulatorBug1.Tests
 {
@@ -60,6 +62,34 @@ namespace STRAT.StorageEmulatorBug1.Tests
                 getContractBalance,
                 hashHelper
             );
+        }
+
+        [TestMethod]
+        public void DemonstratePersistentStorageBugFix() // MWHERMAN2000
+        {
+            var auction = new Auction(SmartContractState, Duration);
+
+            UserLedgerEntry uleHeap1 = new UserLedgerEntry();
+            uleHeap1.Username = "AlphaBravo";
+            uleHeap1.Passphrase = "passphrase-passphrase-passphrase";
+            Debug.WriteLine("uleHeap1.0:" + JsonConvert.SerializeObject(uleHeap1));
+
+            auction.UserLedgerEntry1 = uleHeap1; // Invoke setter
+            Debug.WriteLine("uleHeap1.1:" + JsonConvert.SerializeObject(auction.UserLedgerEntry1));
+            Debug.WriteLine("uleHeap1.2:" + JsonConvert.SerializeObject(SmartContractState.PersistentState.GetObject<UserLedgerEntry>("UserLedgerEntry1Key")));
+
+            uleHeap1.Username = "CharlieDelta";  // Change uleHeap1.Username field (which lives on the Heap)
+            Debug.WriteLine("uleHeap1.3:" + JsonConvert.SerializeObject(uleHeap1));
+            Debug.WriteLine("uleHeap1.4:" + JsonConvert.SerializeObject(auction.UserLedgerEntry1)); // Persisted value changes too (access via getter)
+            Debug.WriteLine("uleHeap1.5:" + JsonConvert.SerializeObject(SmartContractState.PersistentState.GetObject<UserLedgerEntry>("UserLedgerEntry1Key"))); // Persisted value changes too (access via GetObject())
+
+            UserLedgerEntry uleHeap2 = SmartContractState.PersistentState.GetObject<UserLedgerEntry>("UserLedgerEntry1Key");
+            // uleHeap2 should be an entity allocated on the Heap - disassociated from the entity in Persistent Storage
+            Debug.WriteLine("uleHeap2.1:" + JsonConvert.SerializeObject(uleHeap2));
+            Debug.WriteLine("uleHeap2.2:" + JsonConvert.SerializeObject(SmartContractState.PersistentState.GetObject<UserLedgerEntry>("UserLedgerEntry1Key")));
+            uleHeap2.Username = "EchoFoxtrot"; // this should just change Username for the entity on the Heap
+            Debug.WriteLine("uleHeap2.3:" + JsonConvert.SerializeObject(uleHeap2));
+            Debug.WriteLine("uleHeap2.4:" + JsonConvert.SerializeObject(SmartContractState.PersistentState.GetObject<UserLedgerEntry>("UserLedgerEntry1Key")));
         }
 
         [TestMethod]
